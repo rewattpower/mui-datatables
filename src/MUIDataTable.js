@@ -461,9 +461,12 @@ class MUIDataTable extends React.Component {
   };
 
   changeRowsPerPage = rows => {
+    const { displayData, page } = this.state;
+    const rowCount = this.options.count || displayData.length;
     this.setState(
       () => ({
         rowsPerPage: rows,
+        page: Math.min(this.state.page, Math.floor(rowCount / rows)),
       }),
       () => {
         if (this.options.onChangeRowsPerPage) {
