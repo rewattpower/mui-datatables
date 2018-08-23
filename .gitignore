@@ -29,7 +29,6 @@ node_modules
 .npm
 
 # Build Data
-dist/*
 es/*
 lib/*
 
