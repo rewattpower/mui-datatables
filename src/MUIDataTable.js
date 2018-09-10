@@ -175,8 +175,8 @@ class MUIDataTable extends React.Component {
       viewColumns: true,
       download: true,
       downloadOptions: {
-        filename: 'tableDownload.csv',
-        separator: ',',
+        filename: "tableDownload.csv",
+        separator: ",",
       },
     };
 
@@ -355,10 +355,19 @@ class MUIDataTable extends React.Component {
       }
 
       const columnVal = columnValue === null ? "" : columnValue.toString();
-      const searchCase = !this.options.caseSensitive ? columnVal.toLowerCase() : columnVal.toString();
 
-      if (searchText && searchCase.indexOf(searchText.toLowerCase()) >= 0) {
-        isSearchFound = true;
+      if (searchText) {
+        let searchNeedle = searchText.toString();
+        let searchStack = columnVal.toString();
+
+        if (!this.options.caseSensitive) {
+          searchNeedle = searchNeedle.toLowerCase();
+          searchStack = searchStack.toLowerCase();
+        }
+
+        if (searchStack.indexOf(searchNeedle) >= 0) {
+          isSearchFound = true;
+        }
       }
     }
 
@@ -792,7 +801,7 @@ class MUIDataTable extends React.Component {
         <div
           style={{ position: "relative" }}
           className={this.options.responsive === "scroll" ? classes.responsiveScroll : null}>
-          {this.options.resizableColumns && <MUIDataTableResize setResizeable={fn => (this.setHeadResizeable = fn)} />}
+          {this.options.resizableColumns && <MUIDataTableResize key={rowCount} setResizeable={fn => (this.setHeadResizeable = fn)} />}
           <Table ref={el => (this.tableRef = el)} tabIndex={"0"} role={"grid"}>
             <caption className={classes.caption}>{title}</caption>
             <MUIDataTableHead
