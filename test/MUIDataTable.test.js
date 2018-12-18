@@ -1,7 +1,7 @@
 import React from "react";
 import { spy } from "sinon";
 import { mount, shallow } from "enzyme";
-import { assert, expect, should } from "chai";
+import { assert, expect } from "chai";
 import MUIDataTable from "../src/MUIDataTable";
 import MUIDataTableFilterList from "../src/MUIDataTableFilterList";
 import MUIDataTablePagination from "../src/MUIDataTablePagination";
@@ -381,6 +381,18 @@ describe("<MUIDataTable />", function() {
     assert.deepEqual(state.rowsPerPage, 10);
   });
 
+  it("should recalculate page when calling changeRowsPerPage method", () => {
+    const data = new Array(29).fill("").map(() => ["Joe James", "Test Corp", "Yonkers", "NY"]);
+    const mountWrapper = mount(shallow(<MUIDataTable columns={columns} data={data} />).get(0));
+    const instance = mountWrapper.instance();
+
+    instance.changePage(2);
+    instance.changeRowsPerPage(15);
+
+    const state = mountWrapper.state();
+    assert.equal(state.page, 1);
+  });
+
   it("should update page position when calling changePage method", () => {
     const shallowWrapper = shallow(<MUIDataTable columns={columns} data={data} />).dive();
     const instance = shallowWrapper.instance();
@@ -400,7 +412,12 @@ describe("<MUIDataTable />", function() {
     shallowWrapper.update();
 
     const state = shallowWrapper.state();
-    const expectedResult = [{ index: 0 }, { index: 1 }, { index: 2 }, { index: 3 }];
+    const expectedResult = [
+      { index: 0, dataIndex: 0 },
+      { index: 1, dataIndex: 1 },
+      { index: 2, dataIndex: 2 },
+      { index: 3, dataIndex: 3 },
+    ];
     assert.deepEqual(state.selectedRows.data, expectedResult);
   });
 
@@ -415,6 +432,19 @@ describe("<MUIDataTable />", function() {
     assert.deepEqual(state.selectedRows.data, [0]);
   });
 
+  it("should update selectedRows when calling selectRowUpdate method with type=custom", () => {
+    const shallowWrapper = shallow(<MUIDataTable columns={columns} data={data} />).dive();
+    const instance = shallowWrapper.instance();
+
+    instance.selectRowUpdate("custom", [0, 3]);
+    shallowWrapper.update();
+
+    const state = shallowWrapper.state();
+    const expectedResult = [{ index: 0, dataIndex: 0 }, { index: 3, dataIndex: 3 }];
+
+    assert.deepEqual(state.selectedRows.data, expectedResult);
+  });
+
   it("should update value when calling updateValue method in customBodyRender", () => {
     const shallowWrapper = shallow(<MUIDataTable columns={columns} data={data} />).dive();
     const instance = shallowWrapper.instance();
@@ -425,4 +455,95 @@ describe("<MUIDataTable />", function() {
     const state = shallowWrapper.state();
     assert.deepEqual(state.data[0].data[2], "Las Vegas");
   });
+
+  it("should call onTableChange when calling selectRowUpdate method with type=head", () => {
+    const options = { selectableRows: true, onTableChange: spy() };
+    const shallowWrapper = shallow(<MUIDataTable columns={columns} data={data} options={options} />).dive();
+    const instance = shallowWrapper.instance();
+
+    instance.selectRowUpdate("head", 0);
+    shallowWrapper.update();
+
+    const state = shallowWrapper.state();
+    const expectedResult = [
+      { index: 0, dataIndex: 0 },
+      { index: 1, dataIndex: 1 },
+      { index: 2, dataIndex: 2 },
+      { index: 3, dataIndex: 3 },
+    ];
+    assert.deepEqual(state.selectedRows.data, expectedResult);
+    assert.strictEqual(options.onTableChange.callCount, 1);
+  });
+
+  it("should call onTableChange when calling selectRowUpdate method with type=cell", () => {
+    const options = { selectableRows: true, onTableChange: spy() };
+
+    const shallowWrapper = shallow(<MUIDataTable columns={columns} data={data} options={options} />).dive();
+    const instance = shallowWrapper.instance();
+
+    instance.selectRowUpdate("cell", 0);
+    shallowWrapper.update();
+
+    const state = shallowWrapper.state();
+    assert.deepEqual(state.selectedRows.data, [0]);
+    assert.strictEqual(options.onTableChange.callCount, 1);
+  });
+
+  it("should call onTableChange when calling selectRowUpdate method with type=custom", () => {
+    const options = { selectableRows: true, onTableChange: spy() };
+    const shallowWrapper = shallow(<MUIDataTable columns={columns} data={data} options={options} />).dive();
+    const instance = shallowWrapper.instance();
+
+    instance.selectRowUpdate("custom", [0, 3]);
+    shallowWrapper.update();
+
+    const state = shallowWrapper.state();
+    const expectedResult = [{ index: 0, dataIndex: 0 }, { index: 3, dataIndex: 3 }];
+
+    assert.deepEqual(state.selectedRows.data, expectedResult);
+    assert.strictEqual(options.onTableChange.callCount, 1);
+  });
+
+
+
+  describe("fallbackComparator", () => {
+    
+    it("correctly compares two equal strings", () => {
+      expect(MUIDataTable.fallbackComparator("testString", "testString")).to.equal(0);
+    });
+
+    it("correctly compares two different strings", () => {
+      expect(MUIDataTable.fallbackComparator("testStringA", "testStringB")).to.equal(-1);
+    });
+
+  });
+
+  describe("getCollatzComparator", () => {
+
+    describe("when Intl is available", () => {
+      it("returns a collator object", () => {
+        const comparator = MUIDataTable.getCollatzComparator();
+  
+        expect(comparator).not.to.equal(MUIDataTable.fallbackComparator);
+      });
+  
+    });
+  
+    describe("when Intl is not available", () => {
+      
+      it("returns the fallback comparator", () => {
+        const _intl = global.Intl;
+        global.Intl = undefined;
+
+        const comparator = MUIDataTable.getCollatzComparator();
+  
+        global.Intl = _intl;
+  
+        expect(comparator).to.equal(MUIDataTable.fallbackComparator);
+      });
+  
+    });
+  
+  });
+
 });

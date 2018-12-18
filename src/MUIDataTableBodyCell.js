@@ -3,13 +3,13 @@ import classNames from "classnames";
 import TableCell from "@material-ui/core/TableCell";
 import { withStyles } from "@material-ui/core/styles";
 
-const defaultBodyCellStyles = {
+const defaultBodyCellStyles = theme => ({
   root: {},
   cellHide: {
     display: "none",
   },
   cellStacked: {
-    "@media screen and (max-width: 960px)": {
+    [theme.breakpoints.down("sm")]: {
       display: "inline-block",
       backgroundColor: "#FFF",
       fontSize: "16px",
@@ -19,7 +19,7 @@ const defaultBodyCellStyles = {
     },
   },
   responsiveStacked: {
-    "@media screen and (max-width: 960px)": {
+    [theme.breakpoints.down("sm")]: {
       display: "inline-block",
       fontSize: "16px",
       width: "calc(50% - 80px)",
@@ -27,18 +27,18 @@ const defaultBodyCellStyles = {
       height: "24px",
     },
   },
-};
+});
 
 class MUIDataTableBodyCell extends React.Component {
   handleClick = () => {
-    const { colIndex, options, rowIndex } = this.props;
+    const { colIndex, options, children, dataIndex, rowIndex } = this.props;
     if (options.onCellClick) {
-      options.onCellClick(colIndex, rowIndex);
+      options.onCellClick(children, { colIndex, rowIndex });
     }
   };
 
   render() {
-    const { children, classes, colIndex, columnHeader, options, rowIndex, ...otherProps } = this.props;
+    const { children, classes, colIndex, columnHeader, options, dataIndex, rowIndex, ...otherProps } = this.props;
 
     return [
       <TableCell

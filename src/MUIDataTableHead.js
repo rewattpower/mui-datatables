@@ -7,14 +7,14 @@ import MUIDataTableHeadCell from "./MUIDataTableHeadCell";
 import MUIDataTableSelectCell from "./MUIDataTableSelectCell";
 import { withStyles } from "@material-ui/core/styles";
 
-const defaultHeadStyles = {
+const defaultHeadStyles = theme => ({
   main: {},
   responsiveStacked: {
-    "@media screen and (max-width: 960px)": {
+    [theme.breakpoints.down("sm")]: {
       display: "none",
     },
   },
-};
+});
 
 class MUIDataTableHead extends React.Component {
   componentDidMount() {
@@ -46,6 +46,7 @@ class MUIDataTableHead extends React.Component {
               onChange={this.handleRowSelect.bind(null)}
               indeterminate={isDeterminate}
               checked={isChecked}
+              fixedHeader={options.fixedHeader}
             />
           )}
           {columns.map(
@@ -62,6 +63,7 @@ class MUIDataTableHead extends React.Component {
                   sort={column.sort}
                   sortDirection={column.sortDirection}
                   toggleSort={this.handleToggleColumn}
+                  hint={column.hint}
                   options={options}>
                   {column.name}
                 </MUIDataTableHeadCell>

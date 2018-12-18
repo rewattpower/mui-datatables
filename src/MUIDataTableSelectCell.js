@@ -1,14 +1,22 @@
 import React from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import Checkbox from "@material-ui/core/Checkbox";
 import TableCell from "@material-ui/core/TableCell";
 import { withStyles } from "@material-ui/core/styles";
 
-const defaultSelectCellStyles = {
+const defaultSelectCellStyles = theme => ({
   root: {
-    "@media screen and (max-width: 960px)": {
+    [theme.breakpoints.down("sm")]: {
       display: "none",
     },
+  },
+  fixedHeader: {
+    position: "sticky",
+    top: "0px",
+    left: "0px",
+    zIndex: 100,
+    backgroundColor: "#FFF",
   },
   checkboxRoot: {
     "&$checked": {
@@ -17,12 +25,14 @@ const defaultSelectCellStyles = {
   },
   checked: {},
   disabled: {},
-};
+});
 
 class MUIDataTableSelectCell extends React.Component {
   static propTypes = {
     /** Select cell checked on/off */
     checked: PropTypes.bool.isRequired,
+    /** Select cell part of fixed header */
+    fixedHeader: PropTypes.bool.isRequired,
     /** Callback to trigger cell update */
     onChange: PropTypes.func,
     /** Extend the style applied to components */
@@ -30,10 +40,15 @@ class MUIDataTableSelectCell extends React.Component {
   };
 
   render() {
-    const { classes, ...otherProps } = this.props;
+    const { classes, fixedHeader, ...otherProps } = this.props;
+
+    const cellClass = classNames({
+      [classes.root]: true,
+      [classes.fixedHeader]: fixedHeader,
+    });
 
     return (
-      <TableCell className={classes.root} padding="checkbox">
+      <TableCell className={cellClass} padding="checkbox">
         <Checkbox
           classes={{
             root: classes.checkboxRoot,
